@@ -5,7 +5,8 @@ import me.hsgamer.bettergui.builder.ItemModifierBuilder;
 
 public final class EnchantKeyring extends BetterGUIAddon {
     @Override
-    public void onEnable() {
+    public boolean onLoad() {
         ItemModifierBuilder.INSTANCE.register(CustomEnchantmentModifier::new, "custom-enchantment", "custom-enchant");
+        return true;
     }
 }
