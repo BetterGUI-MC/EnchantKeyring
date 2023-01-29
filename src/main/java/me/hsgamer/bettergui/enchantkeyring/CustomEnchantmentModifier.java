@@ -1,11 +1,9 @@
 package me.hsgamer.bettergui.enchantkeyring;
 
-import me.hsgamer.bettergui.config.MessageConfig;
-import me.hsgamer.bettergui.lib.core.bukkit.item.ItemMetaModifier;
-import me.hsgamer.bettergui.lib.core.bukkit.utils.MessageUtils;
-import me.hsgamer.bettergui.lib.core.common.CollectionUtils;
-import me.hsgamer.bettergui.lib.core.common.Validate;
-import me.hsgamer.bettergui.lib.core.common.interfaces.StringReplacer;
+import me.hsgamer.hscore.bukkit.item.ItemMetaModifier;
+import me.hsgamer.hscore.common.CollectionUtils;
+import me.hsgamer.hscore.common.Validate;
+import me.hsgamer.hscore.common.interfaces.StringReplacer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -26,7 +24,13 @@ public class CustomEnchantmentModifier extends ItemMetaModifier {
     private Map<Enchantment, Integer> getParsed(UUID uuid, Collection<StringReplacer> stringReplacers) {
         Map<Enchantment, Integer> enchantments = new LinkedHashMap<>();
         for (String string : enchantmentList) {
-            String[] split = StringReplacer.replace(string, uuid, stringReplacers).split(",", 2);
+            String replaced = StringReplacer.replace(string, uuid, stringReplacers);
+            String[] split;
+            if (replaced.indexOf(',') != -1) {
+                split = replaced.split(",", 2);
+            } else {
+                split = replaced.split(" ", 2);
+            }
             Optional<Enchantment> enchantment = Optional.of(split[0].trim()).map(NamespacedKey::fromString).map(Enchantment::getByKey);
             int level = 1;
             if (split.length > 1) {
@@ -35,14 +39,11 @@ public class CustomEnchantmentModifier extends ItemMetaModifier {
                 if (optional.isPresent()) {
                     level = optional.get().intValue();
                 } else {
-                    MessageUtils.sendMessage(uuid, MessageConfig.INVALID_NUMBER.getValue().replace("{input}", rawLevel));
                     continue;
                 }
             }
             if (enchantment.isPresent()) {
                 enchantments.put(enchantment.get(), level);
-            } else {
-                MessageUtils.sendMessage(uuid, MessageConfig.INVALID_ENCHANTMENT.getValue().replace("{input}", string));
             }
         }
         return enchantments;
