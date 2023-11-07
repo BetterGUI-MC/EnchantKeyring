@@ -1,10 +1,10 @@
 package me.hsgamer.bettergui.enchantkeyring;
 
 import me.hsgamer.bettergui.builder.ItemModifierBuilder;
-import me.hsgamer.hscore.bukkit.addon.PluginAddon;
 import me.hsgamer.hscore.common.Validate;
+import me.hsgamer.hscore.expansion.common.Expansion;
 
-public final class EnchantKeyring extends PluginAddon {
+public final class EnchantKeyring implements Expansion {
     @Override
     public boolean onLoad() {
         Class<?> namespaceKeyClass;

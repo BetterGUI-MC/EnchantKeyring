@@ -1,25 +1,22 @@
 package me.hsgamer.bettergui.enchantkeyring;
 
-import me.hsgamer.hscore.bukkit.item.ItemMetaModifier;
+import me.hsgamer.hscore.bukkit.item.modifier.ItemMetaComparator;
+import me.hsgamer.hscore.bukkit.item.modifier.ItemMetaModifier;
 import me.hsgamer.hscore.common.CollectionUtils;
+import me.hsgamer.hscore.common.StringReplacer;
 import me.hsgamer.hscore.common.Validate;
-import me.hsgamer.hscore.common.interfaces.StringReplacer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class CustomEnchantmentModifier extends ItemMetaModifier {
+public class CustomEnchantmentModifier implements ItemMetaModifier, ItemMetaComparator {
     private List<String> enchantmentList = Collections.emptyList();
-
-    @Override
-    public String getName() {
-        return "custom-enchantment";
-    }
 
     private Map<Enchantment, Integer> getParsed(UUID uuid, Collection<StringReplacer> stringReplacers) {
         Map<Enchantment, Integer> enchantments = new LinkedHashMap<>();
@@ -50,8 +47,8 @@ public class CustomEnchantmentModifier extends ItemMetaModifier {
     }
 
     @Override
-    public ItemMeta modifyMeta(ItemMeta meta, UUID uuid, Map<String, StringReplacer> stringReplacerMap) {
-        Map<Enchantment, Integer> map = getParsed(uuid, stringReplacerMap.values());
+    public @NotNull ItemMeta modifyMeta(@NotNull ItemMeta meta, UUID uuid, @NotNull Collection<StringReplacer> stringReplacers) {
+        Map<Enchantment, Integer> map = getParsed(uuid, stringReplacers);
         if (map instanceof EnchantmentStorageMeta) {
             map.forEach((enchant, level) -> ((EnchantmentStorageMeta) meta).addStoredEnchant(enchant, level, true));
         } else {
@@ -61,21 +58,20 @@ public class CustomEnchantmentModifier extends ItemMetaModifier {
     }
 
     @Override
-    public void loadFromItemMeta(ItemMeta meta) {
+    public boolean loadFromItemMeta(ItemMeta meta) {
+        if (!meta.hasEnchants()) {
+            return false;
+        }
         this.enchantmentList = meta.getEnchants().entrySet()
                 .stream()
                 .map(entry -> entry.getKey().getKey() + ", " + entry.getValue())
                 .collect(Collectors.toList());
+        return true;
     }
 
     @Override
-    public boolean canLoadFromItemMeta(ItemMeta meta) {
-        return meta.hasEnchants();
-    }
-
-    @Override
-    public boolean compareWithItemMeta(ItemMeta meta, UUID uuid, Map<String, StringReplacer> stringReplacerMap) {
-        Map<Enchantment, Integer> list1 = getParsed(uuid, stringReplacerMap.values());
+    public boolean compare(ItemMeta meta, UUID uuid, @NotNull Collection<StringReplacer> stringReplacers) {
+        Map<Enchantment, Integer> list1 = getParsed(uuid, stringReplacers);
         Map<Enchantment, Integer> list2 = meta.getEnchants();
         if (list1.size() != list2.size()) {
             return false;
