@@ -18,10 +18,10 @@ import java.util.stream.Collectors;
 public class CustomEnchantmentModifier implements ItemMetaModifier, ItemMetaComparator {
     private List<String> enchantmentList = Collections.emptyList();
 
-    private Map<Enchantment, Integer> getParsed(UUID uuid, Collection<StringReplacer> stringReplacers) {
+    private Map<Enchantment, Integer> getParsed(UUID uuid, StringReplacer stringReplacer) {
         Map<Enchantment, Integer> enchantments = new LinkedHashMap<>();
         for (String string : enchantmentList) {
-            String replaced = StringReplacer.replace(string, uuid, stringReplacers);
+            String replaced = stringReplacer.replaceOrOriginal(string, uuid);
             String[] split;
             if (replaced.indexOf(',') != -1) {
                 split = replaced.split(",", 2);
@@ -47,8 +47,8 @@ public class CustomEnchantmentModifier implements ItemMetaModifier, ItemMetaComp
     }
 
     @Override
-    public @NotNull ItemMeta modifyMeta(@NotNull ItemMeta meta, UUID uuid, @NotNull Collection<StringReplacer> stringReplacers) {
-        Map<Enchantment, Integer> map = getParsed(uuid, stringReplacers);
+    public @NotNull ItemMeta modifyMeta(@NotNull ItemMeta meta, UUID uuid, @NotNull StringReplacer stringReplacer) {
+        Map<Enchantment, Integer> map = getParsed(uuid, stringReplacer);
         if (map instanceof EnchantmentStorageMeta) {
             map.forEach((enchant, level) -> ((EnchantmentStorageMeta) meta).addStoredEnchant(enchant, level, true));
         } else {
@@ -70,8 +70,8 @@ public class CustomEnchantmentModifier implements ItemMetaModifier, ItemMetaComp
     }
 
     @Override
-    public boolean compare(ItemMeta meta, UUID uuid, @NotNull Collection<StringReplacer> stringReplacers) {
-        Map<Enchantment, Integer> list1 = getParsed(uuid, stringReplacers);
+    public boolean compare(ItemMeta meta, UUID uuid, @NotNull StringReplacer stringReplacer) {
+        Map<Enchantment, Integer> list1 = getParsed(uuid, stringReplacer);
         Map<Enchantment, Integer> list2 = meta.getEnchants();
         if (list1.size() != list2.size()) {
             return false;
